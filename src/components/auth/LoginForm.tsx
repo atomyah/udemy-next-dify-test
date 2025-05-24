@@ -17,7 +17,7 @@ import { authenticate } from '@/lib/actions/authenticate';
 export default function LoginForm() {
     // formActionはフォームに設定（<form action={formAction}>）。useActionStateとuseStateの違い → ページ最下部に例示。
     // // useActionStateはServer Actions専用の状態管理フック.
-  const [errorMessage, formAction, isPending] = useActionState(
+  const [errorMessage, formAction] = useActionState(
     authenticate,
     undefined,
   )
@@ -37,7 +37,7 @@ export default function LoginForm() {
                     <Label htmlFor="password">パスワード</Label>
                     <Input id='password' name='password' type='password' required />
                 </div>
-                <Button type='submit' disabled={isPending} className="w-full">ログイン</Button>
+                <Button type='submit' className="w-full">ログイン</Button>
                 <div className="flex h-8 items-end space-x-1">
                 {errorMessage && (
                     <div className="text-red-500">

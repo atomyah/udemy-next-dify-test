@@ -8,7 +8,7 @@ import { signOut } from "@/auth"
 import { Button } from "@/components/ui/button"
 import { Session } from "next-auth" // TypeScriptの型定義をインポート
 
-import { auth } from "@/auth"               // ここで使う↓ 親コンポーネントPrivateHeaderのconst session = await auth();で得たsession情報をpropsでもらってきている 
+                                           // ここで使う↓ 親コンポーネントPrivateHeaderのconst session = await auth();で得たsession変数情報をpropsでもらってきている 
 export default function Setting({session}: {session: Session}) {
     const handleLogout = async () => {
         'use server'
