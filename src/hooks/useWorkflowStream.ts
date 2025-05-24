@@ -64,7 +64,7 @@ export function useWorkflowStream(){
         // 298 ▲@useWorkflowStreamフック内のeventData.eventは text_chunk
         // ▲@useWorkflowStreamフック内のeventData.eventは node_finished
         // ▲@useWorkflowStreamフック内のeventData.eventは workflow_finished
-        
+
         if(eventData.event === 'text_chunk'){
             appendText(eventData.data.text as string) // 受け取ったチャンクテキストを格納する
         }
@@ -84,7 +84,7 @@ export function useWorkflowStream(){
         setOutput(completeTextRef.current)
     }
 
-    // useEffectを使ったクリーンアップ処理
+    // useEffectを使ったクリーンアップ処理(初回表示でチャンクデータが残っていたら消す)
     useEffect(() => {
         return () => {
             if(eventSourceRef.current) {

@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  password String
+  name String
+  role UserRole @default(USER) // UserRoleは下のenumでADMINかUSERか選べるようにする
+  createdAt DateTime @default(now()) // 作成時に現在時刻を設定
+  updatedAt DateTime @updatedAt // 更新時に時刻を自動更新prisma.user.update()でupdatedAtを記述する必要がない
+  conversations Conversation[] // ユーザー毎に会話履歴データを持つのでリレーションを張る。1対多。親側の定義の仕方。例: user.conversationsで、そのユーザーの全会話にアクセス可能
+  @@map("users") // @@mapでテーブル名を決めることができる。この場合"users"
+}
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model Conversation {
+  id String @id @default(cuid()) // Difyのidとは別にわざわざ会話履歴のidを作る
+  difyConversationId String @unique // Dify APIから返される会話ID
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) // 1対多。子側の定義の仕方。fields: [userId]はこのモデルの外部キー。references: [id]は参照先（Userモデル）の主キー。onDelete: Cascadeは親が削除されたら子も削除。
+  title String?
+  totalTokens Int @default(0) // この会話で使用されたトークンの合計
+  totalCost Float @default(0) // この会話のコスト合計
+  createdAt DateTime @default(now()) // 作成時に現在時刻を設定
+  updatedAt DateTime @updatedAt // 更新時に時刻を自動更新prisma.conversations.update()でupdatedAtを記述する必要がない
+
+  @@unique([difyConversationId, userId]) // 複合ユニーク制約.difyConversationIdとuserIdの組み合わせが重複しないようにする
+  @@map("conversations") // @@mapでテーブル名を決めることができる。この場合"conversations"
+}
