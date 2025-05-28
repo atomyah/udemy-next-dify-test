@@ -1,8 +1,9 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import type { ChatProps } from "@/types/chat";
 
-
-export default function ChatInput() {
+export default function ChatInput({ userId }: ChatProps) {
+  console.log('@ChatInputに渡ったprops userId:', userId);
   return (
     <div>
       <form className="flex flex-col gap-2 px-4 max-w-4xl mx-auto w-full">

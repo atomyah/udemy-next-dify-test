@@ -1,7 +1,8 @@
 "use client";
 import ChatInput from "./ChatInput";
+import type { ChatProps } from "@/types/chat";
 
-export default function ChatContainer() {
+export default function ChatContainer({ userId}: ChatProps) {
   return (
     <div className="flex flex-col h-full">
       {/* メッセージ表示エリア */}
@@ -14,7 +15,7 @@ export default function ChatContainer() {
       </div>
       {/* 入力エリア */}
       <div className="flex-shrink-0 border-t py-4">
-        <ChatInput />
+        <ChatInput userId={ userId} />
       </div>
     </div>
     

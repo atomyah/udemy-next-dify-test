@@ -4,8 +4,8 @@ import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import { redirect } from 'next/navigation';
  
-// ...
- 
+
+// フォームからの認証処理
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,

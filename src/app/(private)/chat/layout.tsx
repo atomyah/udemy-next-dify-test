@@ -1,11 +1,19 @@
 import "../../globals.css";
 import ChatSidebar from "@/components/ChatSidebar";
+import { auth } from "@/auth" // 現在の方法（App Router + NextAuth v5）で超簡単に！
 
-export default function PrivateLayout({
+export default async function PrivateLayout({
     children,
   }: Readonly<{
     children: React.ReactNode;
   }>) {
+
+    // auth.tsのcallbacksのsession関数でidを付与しているセッションをここで取得。
+    // 現在の方法（App Router + NextAuth v5）で超簡単に！
+    // IDへのアクセス方法：session?user?.id as string
+    const session = await auth();
+    console.log('id付与後のセッション:', session); // 出力例：id付与後のセッション: { user: { name: 'Test User',  id: 'cmb0eilbi00012lqsn3lzcfu8', email: ... }
+
   return (
     <html>
       <body>

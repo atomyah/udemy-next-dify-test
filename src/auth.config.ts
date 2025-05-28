@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
  
+// 認証の基本設定（プロバイダーなし）
 export const authConfig = {
   pages: {
     signIn: '/login',
@@ -25,5 +26,5 @@ export const authConfig = {
       return true;
     },
   },
-  providers: [], // Add providers with an empty array for now
+  providers: [], // // 空配列.プロバイダーなしの状態で認証を行うための設定
 } satisfies NextAuthConfig;
