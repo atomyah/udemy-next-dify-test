@@ -42,8 +42,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   callbacks: {
     async session({ session, token }) {
-      console.log('session:', session) // 出力例：session: { user: { name: 'Test User', email: test@example.com'
-      console.log('トークン:', token) // 出力例：トークン: { sub: "cmb0eilbi00012lqsn3lzcfu8", name: 'Test User',...' subの値はsqliteのユーザーID
+      // console.log('session:', session) // 出力例：session: { user: { name: 'Test User', email: test@example.com'
+      // console.log('トークン:', token) // 出力例：トークン: { sub: "cmb0eilbi00012lqsn3lzcfu8", name: 'Test User',...' subの値はsqliteのユーザーID
       if (session.user) {
         session.user.id = token.sub as string
       }

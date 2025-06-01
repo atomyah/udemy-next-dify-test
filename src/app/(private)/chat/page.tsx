@@ -7,6 +7,12 @@ export default async function ChatPage() {
   const userId = session?.user?.id as string;
 
   return (
-   <ChatContainer userId={userId} />
+    // localhost/chatページは初回表示ページなのでpropsは全部カラ。
+    // chat/[conversationId]ページは2回目以降ページなのでchat/[conversationId]/page.tsxにはconversationIdなどの値をPropsに渡す
+   <ChatContainer 
+      isNewChat={true}
+      initialMessages={[]}
+      conversationId={null}
+      userId={userId} />
   )
 }

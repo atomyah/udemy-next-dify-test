@@ -1,4 +1,3 @@
-import { metadata } from './../app/(public)/layout';
 import  { prisma } from "@/lib/prisma"
 
 // Difyから渡ってくるデータ（data）の型定義
