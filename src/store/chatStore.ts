@@ -12,7 +12,7 @@ export type Message = {
 export type Conversation = {
     id?: string; // 会話ID
     name: string; // 会話タイトル
-    updatedAt: number;
+    updated_at: number;
 }
 
 
@@ -57,7 +57,7 @@ export const useChatStore = create<ChatStore>()(
         resetStore:() => set({
             conversationId: null,
             messages: [],
-            conversations: [],
+            // conversations: [],　// ChatSidebarでresetStore()を使うためにコメントアウトした。会話リストだけ残すために
             isLoading: false
         })
     }), {

@@ -14,7 +14,7 @@ type Params = {
 //   }
 // }
 
-
+// localhost/chat/[conversationId] のスラグ[conversationId]の部分をparamsとして取ってこれる
 export default async function ChatPage({params}: Params) {
   const session = await auth();
   const userId = session?.user?.id as string;

@@ -12,11 +12,13 @@ export default function ChatContainer({
   const { 
     messages, 
     isLoading,
-    conversationId: storeConversationId,
+    conversationId: storeConversationId, // conversationIdがpropsとstoreで同名のため、別名をつける
     setConversationId,
     setMessages,
     clearMessage } = useChatStore()
 
+  //////////////////////////////////////////////////////////////////////////
+  // 自動スクロール機能のコード ///////////////////////////////////////////////
   const endOfMessagesRef = useRef<HTMLDivElement>(null) // useRefはDOM要素への参照をつくる。
 
   // 新しいメッセージがあれば自動スクロール（[messages]で新しいメッセージを監視.
@@ -25,6 +27,8 @@ export default function ChatContainer({
   useEffect(()=>{
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth'})
   }, [messages])
+  // 自動スクロール機能のコード ~ここまで /////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
 
   useEffect(() => {
     if(isNewChat) {
