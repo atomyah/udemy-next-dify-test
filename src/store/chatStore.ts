@@ -62,7 +62,7 @@ export const useChatStore = create<ChatStore>()(
         })
     }), {
         // persist()の第2引数↓
-        name: 'dify-chat--storage',
+        name: 'dify-chat-storage',
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
             conversationId: state.conversationId,

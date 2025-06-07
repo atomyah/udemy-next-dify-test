@@ -5,19 +5,21 @@ import { useEffect, useRef } from "react";
 import { useChatStore } from "@/store/chatStore";
 
 export default function ChatContainer({ 
+  // chat/[conversationId]/page.tsxから渡ってくるprops↓
   isNewChat,
+  initialMessages,
+  conversationId,
   userId
 } : ChatContainerProps) {
 
   const { 
     messages, 
     isLoading,
-    conversationId: storeConversationId, // conversationIdがpropsとstoreで同名のため、別名をつける
     setConversationId,
     setMessages,
     clearMessage } = useChatStore()
 
-  //////////////////////////////////////////////////////////////////////////
+  
   // 自動スクロール機能のコード ///////////////////////////////////////////////
   const endOfMessagesRef = useRef<HTMLDivElement>(null) // useRefはDOM要素への参照をつくる。
 
@@ -28,14 +30,25 @@ export default function ChatContainer({
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth'})
   }, [messages])
   // 自動スクロール機能のコード ~ここまで /////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
 
+
+
+  // 会話履歴情報がchat/[conversationId]/page.tsxから渡ってきた場合の処理 ///////////
   useEffect(() => {
-    if(isNewChat) {
+    if(isNewChat) { // 新規チャットボタンを押した時あるいは会話履歴がない場合
       clearMessage(),
       setConversationId('')
     }
-  }, [isNewChat, clearMessage, setConversationId])
+    if(conversationId) { // ChatSidebarの会話履歴タイトルを押した時(chat/[conversationId]/page.tsxでparamsとして採取したスラグをconversationIdとして渡してくる.)
+      setConversationId(conversationId)
+    }
+    if(initialMessages && initialMessages.length > 0) { //  chat/[conversationId]/page.tsxから渡ってくるinitialMessagesがある場合(chat/[conversationId]/page.tsxでメッセージ履歴をmessagesとして取得してinitialMessagesとして渡してくる.)
+      setMessages(initialMessages)
+    }
+  }, [isNewChat, clearMessage, setConversationId, initialMessages, conversationId, setMessages])
+   // 会話履歴情報がchat/[conversationId]/page.tsxから渡ってきた場合の処理 ～ここまで ///////////
+
+
 
   return (
     <div className="flex flex-col h-full">

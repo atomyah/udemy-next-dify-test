@@ -70,8 +70,8 @@ export default function ChatSidebar({userId}: ChatProps) {
         </Button>
       </div>
       <div className="flex-1 overflow-y-auto px-2 py-4">
-        <div className="flex justify-between items-center px-2 mb-2">
-          <h3 className="text-sm font-medium">会話履歴</h3>
+        <div className="flex justify-between items-center px-2 py-4 mb-4 border-b border-gray-400">
+          <h3 className="text-sm font-medium text-blue-500">会話履歴</h3>
         </div>
         { isLoading && conversations.length === 0 ? (
           <div className="text-center py-4 text-gray-500">読み込み中……</div>

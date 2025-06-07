@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 // 注意！：現在、DIFY_API_URL=http://localhost/v1 になってる。
-const endpoint = `${process.env.DIFY_API_URL}/conversations` // Difyから会話を取得するエンドポイント"/conversations"
+const endpoint = `${process.env.DIFY_API_URL}/conversations` // Difyから会話を取得するエンドポイント"/conversations"。現在のユーザーの会話リストを取得しデフォルトで最新の20件を返します
 const DIFY_API_KEY = process.env.DIFY_API_KEY
 
 export async function GET(request: NextRequest){
