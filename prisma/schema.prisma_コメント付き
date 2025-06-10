@@ -1,0 +1,136 @@
+//////////////////////////////////////////////////////////////////
+// * Prisma構文解説 * //
+// @ と @@ の違い
+//  @ (アットマーク1つ)
+//   フィールドレベルの属性を定義
+//   個々のフィールドに対する設定
+// @@ (アットマーク2つ)
+//  モデルレベルの属性を定義
+//  モデル全体に対する設定
+// enum について
+//   enumは列挙型を定義するキーワードです。あらかじめ決められた値の中から選択できるようにする
+// リレーション
+//   conversations Conversation[] : 親側1体多の場合
+//   ser User @relation(fields: [userId], references: [id], onDelete: Cascade) ： 子側。"onDelete: Cascade"は親削除時に子も削除
+
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"  // postgresからsqliteに変更した
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  password String
+  name String
+  role UserRole @default(USER) // UserRoleは下のenumでADMINかUSERか選べるようにする.デフォルトではUSER
+  createdAt DateTime @default(now()) // 作成時に現在時刻を設定
+  updatedAt DateTime @updatedAt // 更新時に時刻を自動更新prisma.user.update()でupdatedAtを記述する必要がない
+  conversations Conversation[] // ユーザー毎に会話履歴データを持つのでリレーションを張る。1対多で親側の定義の仕方。例: user.conversationsで、そのユーザーの全会話にアクセス可能
+  usageStats UsageStat[]  // リレーション。UserStatは月単位の複数の使用統計を持つので配列
+  stripeCustomer StripeCustomer? // リレーション。無料ユーザー：StripeCustomerレコードを持たないので?をつける
+  subscription Subscription? // リレーション。同上。サブスクリプションは持たない場合もある
+
+  @@map("users") // @@mapでテーブル名を決めることができる。この場合"users"
+}
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model Conversation {
+  id String @id @default(cuid()) // Difyのidとは別にわざわざ会話履歴のidを作る
+  difyConversationId String @unique // Dify APIから返される会話ID
+  userId String   // 外部キー
+  user User @relation( // 1対多。子側の定義の仕方。
+    fields: [userId],  // このモデルの外部キーフィールド
+    references: [id],  // 参照先モデルの主キーフィールド
+    onDelete: Cascade  // 親が削除されたら子も削除
+  ) 
+  title String?
+  totalTokens Int @default(0) // この会話で使用されたトークンの合計
+  totalCost Float @default(0) // この会話のコスト合計
+  createdAt DateTime @default(now()) // 作成時に現在時刻を設定
+  updatedAt DateTime @updatedAt // 更新時に時刻を自動更新prisma.conversations.update()でupdatedAtを記述する必要がない
+
+  @@unique([difyConversationId, userId]) // 複合ユニーク制約.difyConversationIdとuserIdの組み合わせが重複しないようにする
+  @@map("conversations") // @@mapでテーブル名を決めることができる。この場合"conversations"
+}
+
+////////////////////////////////////////////////////
+// * 以下３つはStripeサブスクリプション用のテーブル *//
+////////////////////////////////////////////////////
+// 使用状況の追跡
+model UsageStat {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(
+    fields: [userId], 
+    references: [id], 
+    onDelete: Cascade
+  )
+  count Int @default(0)
+  tokensUsed Int @default(0)
+  period DateTime // 使用状況の集計期間 月単位で使用料を追跡 各月の初日
+  createdAt DateTime @default(now())
+
+  @@unique([userId, period])  // 複合ユニーク制約.userIdとperiodの組み合わせが重複不可
+  @@map("usage_stats")
+}
+
+// Stripeカスタマー管理
+model StripeCustomer {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(
+    fields: [userId], 
+    references: [id], 
+    onDelete: Cascade
+  )
+  stripeCustomerId String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("stripe_customers")
+}
+
+
+// サブスクリプション管理
+model Subscription {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(
+    fields: [userId], 
+    references: [id], 
+    onDelete: Cascade
+  )
+  stripeCustomerId String?
+  stripePriceId String?
+  stripeSubscriptionId String? @unique
+  status SubscriptionStatus @default(ACTIVE)
+  plan PlanType @default(FREE)
+  currentPeriodStart DateTime?
+  currentPeriodEnd DateTime?
+  cancelAtPeriodEnd Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  endsAt DateTime? // サブスクリプション終了日
+
+  @@map("subscriptions")
+}
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  TRIAL
+  UNPAID
+}
+enum PlanType {
+  FREE
+  PRO
+}

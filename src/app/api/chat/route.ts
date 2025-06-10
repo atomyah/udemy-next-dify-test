@@ -1,9 +1,11 @@
 ////////////////////////////////////////////////////////////////////////
-// ChatInputコンポーネントのcallDifyApi関数で呼ばれるルートハンドラーです //
+// ChatInputコンポーネントのcallDifyApi()関数で呼ばれるルートハンドラーです。
+// callDifyApi()関数にはレスポンス403エラーの場合の処理もある（Stripe用） //
 ///////////////////////////////////////////////////////////////////////
 
 import { NextRequest, NextResponse } from "next/server"
 import { createConversation, updateConversation } from "@/lib/conversation" // 会話テーブルの新規作成と更新を行う関数
+import { checkUsageLimit, incrementUsage } from "@/lib/usage";
 
 // 注意！：現在、DIFY_API_URL=http://localhost/v1 になってる。
 const endpoint = `${process.env.DIFY_API_URL}/chat-messages` // チャットフローの場合のエンドポイント（ワークフローの場合は `/workflows/run`）
@@ -14,6 +16,23 @@ export async function POST(request: NextRequest){
     try{
         const body = await request.json()
         const { query, userId, conversationId } = body  // ChatInputコンポーネントから渡ってくるデータ
+
+
+
+        // * Dify通信前に使用量をチェック(Stripe用) * //
+        ////////////////////////////////////////
+        // src/lib/usage.tsのcheckUsageLimit()関数 ↓ allowedがtrueかfalseかの状態で返ってくる
+        const usageCheck = await checkUsageLimit(userId)
+
+        if(!usageCheck.allowed){
+            return NextResponse.json({ 
+                error: usageCheck.message // usageCheck.messageはsrc/lib/usage.tsのcheckUsageLimit()関数で返ってくるメッセージ。
+             }, { status: 403 })          // "無料プランの上限に達しました。Proプランへのアップグレードをご検討ください。"
+        }                                 // "今月の会話上限に達しました。来月までお待ちください。"
+        ////////////////////////////////////////       // status:403は「認証されているが、権限がない・制限されている」場合に使う
+        // * Dify通信前に使用量をチェック(Stripe用)～ここまで * //
+
+
 
         // DifyワークフローAPI接続
         const response = await fetch(endpoint, {
@@ -33,6 +52,26 @@ export async function POST(request: NextRequest){
         })
 
         const data = await response.json()
+
+
+
+        // * Dify通信後にトークン数をチェック(Stripe用) * //
+        ////////////////////////////////////////
+        // トークン数
+        const tokenCount = data.metadata?.usage?.total_tokens || 0
+
+        // * Dify通信後に使用量(count)を増加 * //
+        ////////////////////////////////////////
+        // 使用量を増加させる
+        // src/lib/usage.tsのincrementUsage()関数 ↓ 使用量(count)を増加させる
+        await incrementUsage(userId, tokenCount)
+
+        // * Dify通信後にトークン数をチェックと使用量増加(Stripe用)～ここまで * //
+        ////////////////////////////////////////
+
+
+
+
         console.log('@api/chat/route.tsでのdata:', data)
         // 出力例：
         //  {
@@ -69,8 +108,10 @@ export async function POST(request: NextRequest){
             updateConversation(data, userId)   // ２回目以降はconversationIdがあるので更新作業
         }
 
-
         return NextResponse.json(data)
+
+
+
 
 
     } catch(error){

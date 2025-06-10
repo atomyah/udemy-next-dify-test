@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,28 +12,88 @@ model User {
   email String @unique
   password String
   name String
-  role UserRole @default(USER) // UserRoleは下のenumでADMINかUSERか選べるようにする
-  createdAt DateTime @default(now()) // 作成時に現在時刻を設定
-  updatedAt DateTime @updatedAt // 更新時に時刻を自動更新prisma.user.update()でupdatedAtを記述する必要がない
-  conversations Conversation[] // ユーザー毎に会話履歴データを持つのでリレーションを張る。1対多。親側の定義の仕方。例: user.conversationsで、そのユーザーの全会話にアクセス可能
-  @@map("users") // @@mapでテーブル名を決めることができる。この場合"users"
+  role UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  conversations Conversation[]
+  usageStats UsageStat[]
+  stripeCustomer StripeCustomer?
+  subscription Subscription?
+
+  @@map("users")
 }
+
 enum UserRole {
   ADMIN
   USER
 }
 
 model Conversation {
-  id String @id @default(cuid()) // Difyのidとは別にわざわざ会話履歴のidを作る
-  difyConversationId String @unique // Dify APIから返される会話ID
+  id String @id @default(cuid())
+  difyConversationId String @unique
   userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade) // 1対多。子側の定義の仕方。fields: [userId]はこのモデルの外部キー。references: [id]は参照先（Userモデル）の主キー。onDelete: Cascadeは親が削除されたら子も削除。
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   title String?
-  totalTokens Int @default(0) // この会話で使用されたトークンの合計
-  totalCost Float @default(0) // この会話のコスト合計
-  createdAt DateTime @default(now()) // 作成時に現在時刻を設定
-  updatedAt DateTime @updatedAt // 更新時に時刻を自動更新prisma.conversations.update()でupdatedAtを記述する必要がない
+  totalTokens Int @default(0)
+  totalCost Float @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([difyConversationId, userId]) // 複合ユニーク制約.difyConversationIdとuserIdの組み合わせが重複しないようにする
-  @@map("conversations") // @@mapでテーブル名を決めることができる。この場合"conversations"
+  @@unique([difyConversationId, userId])
+  @@map("conversations")
+}
+
+model UsageStat {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  count Int @default(0)
+  tokensUsed Int @default(0)
+  period DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([userId, period])
+  @@map("usage_stats")
+}
+
+model StripeCustomer {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("stripe_customers")
+}
+
+model Subscription {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId String?
+  stripePriceId String?
+  stripeSubscriptionId String? @unique
+  status SubscriptionStatus @default(ACTIVE)
+  plan PlanType @default(FREE)
+  currentPeriodStart DateTime?
+  currentPeriodEnd DateTime?
+  cancelAtPeriodEnd Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  endsAt DateTime?
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  TRIAL
+  UNPAID
+}
+
+enum PlanType {
+  FREE
+  PRO
 }

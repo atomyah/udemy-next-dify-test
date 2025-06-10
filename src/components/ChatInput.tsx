@@ -1,9 +1,15 @@
+///////////////////////////////////////////////////////////////////////
+// src/app/(private)/chat/layout.tsxに埋め込まれるコンポーネントです。 ///
+///////////////////////////////////////////////////////////////////////
+
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { ChatProps } from "@/types/chat";
 import React, { useState } from 'react'
 import { useChatStore } from "@/store/chatStore"; // Zustandストアをインポート
 import { useRouter } from "next/navigation"; // useRouterをインポート. リダイレクト用
+import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
 
 
 export default function ChatInput({ userId }: ChatProps) {
@@ -44,7 +50,7 @@ export default function ChatInput({ userId }: ChatProps) {
                   conversationId: conversationId
               })
           })
-          const result = await response.json() // // app/api/chat/route.tsからのリスポンス
+          const result = await response.json()  // app/api/chat/route.tsからのリスポンス
           // console.log('@ChatInputにてAPIからのレスポンスresult:', result)
           // 出力例：
           // result:
@@ -65,6 +71,29 @@ export default function ChatInput({ userId }: ChatProps) {
           //               total_tokens: 140
           //               ...等等
           //             }
+
+          // * app/api/chat/route.tsからのリスポンスエラーを受けての処理(Stripe用) */
+          // from api/chat/route.tsの * Dify通信前に使用量をチェック(Stripe用) * で作られるresponseエラー //
+          //////////////////////////////////////////////////////////////////////////////////////////////
+          if(!response.ok){     // app/api/chat/route.tsからのリスポンス
+            // 403エラーの場合(status:403は「認証されているが、権限がない・制限されている」場合に使う)
+            if(response.status === 403) {
+              toast('利用制限に達しました', {
+                description: "月間の利用度回数制限に達しました。プランをアップグレードしてください"
+              })
+            // その他のエラーの場合
+            } else {
+              toast('エラーが発生しました。', {
+                description: "リクエストの処理中にエラーが発生しました"
+              })
+            }
+          }
+          // * app/api/chat/route.tsからのリスポンスエラーを受けての処理(Stripe用) */
+          // from api/chat/route.tsの * Dify通信前に使用量をチェック(Stripe用) * で作られるresponseエラー //
+          /////////////////////////////////　～ここまで～ ///////////////////////////////////////////////
+
+
+
 
           // 会話IDがセットされていなければ設定（初回の会話）
           if(!conversationId) {
@@ -107,6 +136,7 @@ export default function ChatInput({ userId }: ChatProps) {
           </Button>
         </div>
       </form>
+      <Toaster />
     </div>
   )
 }
