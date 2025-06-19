@@ -1,3 +1,7 @@
+/////////////////////////////////////////////////////////////////
+// * RegisterForm.tsxコンポーネントでcreateUser()関数が呼ばれている
+////////////////////////////////////////////////////////////////
+
 'use server'
 
 import { registerSchema } from "@/validation/user"
@@ -68,6 +72,7 @@ export async function createUser(
             password: hashedPassword
         }
     })
+
 
     // dashboardにリダイレクト
     await signIn('credentials', {

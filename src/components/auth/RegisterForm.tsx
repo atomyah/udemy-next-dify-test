@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useActionState } from 'react'; // useActionStateを使うので'use client'
-import { createUser } from '@/lib/actions/createUser'; // lib/actions/createUser.tsからインポートしてるfunction
+import { createUser } from '@/lib/actions/createUser'; // lib/actions/createUser.tsからインポートしてる関数。これでDBにユーザデータを登録
 
 export default function RegisterForm() {
     // useActionStateはServer Actions専用の状態管理フック. useActionStateとuseStateの違い → ページ最下部に例示。
