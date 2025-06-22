@@ -69,7 +69,14 @@ export async function createUser(
         data: {
             name: rawFormData.name,
             email: rawFormData.email,
-            password: hashedPassword
+            password: hashedPassword,
+            // デフォルトのFREEプランのSubscriptionも同時に作成
+            subscription: {
+                create: {
+                    plan: 'FREE',
+                    status: 'ACTIVE'
+                }
+            }
         }
     })
 

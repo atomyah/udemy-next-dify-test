@@ -21,7 +21,7 @@ export async function saveSubscription(
             stripePriceId,
             stripeSubscriptionId,
             status: 'ACTIVE',
-            plan: 'PRO',
+            plan: 'PRO',  // Stripe決済完了時はPROプラン
             currentPeriodStart,
             currentPeriodEnd,
             cancelAtPeriodEnd,
@@ -32,7 +32,7 @@ export async function saveSubscription(
             stripePriceId,
             stripeSubscriptionId,
             status: 'ACTIVE',
-            plan: 'PRO',
+            plan: 'PRO',  // Stripe決済完了時はPROプラン
             currentPeriodStart,
             currentPeriodEnd,
             cancelAtPeriodEnd,
